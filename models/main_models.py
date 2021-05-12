@@ -4,6 +4,8 @@ import torch.nn.functional as F
 from models.BasicModule import BasicModule
 from torch_same_pad import get_pad, pad # pip install git+https://github.com/CyberZHG/torch-same-pad.git
 from torchsummary import summary
+import functools
+import operator
 
 class DCD(BasicModule):
     def __init__(self,h_features=64,input_features=128):
@@ -59,7 +61,8 @@ class CNN_SPEC(BasicModule):
         self.in_channels = 1
         self.dropout = 0.4
         self.input_size = [32,10]
-        self.fc_in = 512 # 32*int((self.input_size[0]/4-3)*(self.input_size[1]/4-3))
+        # self.fc_in = 512 # 32*int((self.input_size[0]/4-3)*(self.input_size[1]/4-3))
+        self.input_dim = (1,32,10)
 
         self.conv1 = nn.Sequential(
                 nn.Conv2d(self.in_channels, 16, 4, padding=(1,1), stride=1),
@@ -71,6 +74,10 @@ class CNN_SPEC(BasicModule):
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d((2, 2),stride=2)
                 )
+        # calculate the output size after CNN
+        self.fc_in = functools.reduce(operator.mul, list(self.conv2(self.conv1(torch.rand(1, *self.input_dim))).shape))
+        print(f'num of fc_in {self.fc_in}')
+
         self.fc = nn.Sequential(
                 nn.Linear(self.fc_in, 1024),
                 nn.ReLU(inplace=True),
@@ -84,6 +91,7 @@ class CNN_SPEC(BasicModule):
         x = x.view(-1,self.fc_in)
         x = self.fc(x)
         return x
+
 
 class DCD_GTSRB(BasicModule):
     def __init__(self,h_features=64,input_features=128):
