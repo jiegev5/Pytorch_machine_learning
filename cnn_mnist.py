@@ -6,6 +6,7 @@ import numpy as np
 import sys
 import torch
 import time
+from torchsummary import summary
 parser=argparse.ArgumentParser()
 parser.add_argument('--n_epoches',type=int,default=10)
 parser.add_argument('--batch_size',type=int,default=64)
@@ -33,6 +34,9 @@ print(classifier)
 encoder=main_models.Encoder()
 print("Encoder: ")
 print(encoder)
+
+# visual model size at each layer
+summary(encoder,(1,28,28),batch_size=-1,device='cpu')
 
 classifier.to(device)
 encoder.to(device)
