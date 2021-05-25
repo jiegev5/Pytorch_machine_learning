@@ -11,10 +11,10 @@ from datagen import load_gtsrb,GTSRB
 def mnist_dataloader(batch_size=256,train=True):
 
     dataloader=DataLoader(
-    datasets.MNIST('./data/mnist',train=train,download=False,
+    datasets.MNIST('./data/mnist',train=train,download=True,
                    transform=transforms.Compose([
                        transforms.ToTensor(),
-                       transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))
+                       transforms.Normalize((0.5,),(0.5,))
                    ])),
     batch_size=batch_size,shuffle=True)
 

@@ -22,5 +22,11 @@ python mlp_mnist.py
 python cnn_mnist.py
 ```
 
+3. ResNet18 on MNIST (test accuracy: 99%)
+
+```bash
+python resnet_mnist.py
+```
+
 
 

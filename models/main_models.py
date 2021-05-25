@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
 from models.BasicModule import BasicModule
 from torch_same_pad import get_pad, pad # pip install git+https://github.com/CyberZHG/torch-same-pad.git
 from torchsummary import summary
@@ -163,6 +164,44 @@ class MLP(BasicModule):
         # validity = self.model(input_tensor)
         return self.model(input_tensor)
 
+## Resnet
+def resnet_encoder(name, pretrained=False):
+    resnets = {
+        "resnet18": torchvision.models.resnet18(pretrained=pretrained),
+        "resnet50": torchvision.models.resnet50(pretrained=pretrained),
+    }
+    if name not in resnets.keys():
+        raise KeyError(f"{name} is not a valid ResNet version")
+    return resnets[name]
+
+class ResNet_MNIST(BasicModule):
+    def __init__(self, encoder, num_classes):
+        super(ResNet_MNIST, self).__init__()
+
+        self.encoder = encoder
+        # modify Conv1 to change channel_in
+        new_in_channels = 1
+
+        layer = self.encoder.conv1
+                
+        # Creating new Conv2d layer
+        new_layer = nn.Conv2d(in_channels=new_in_channels, 
+                        out_channels=layer.out_channels, 
+                        kernel_size=layer.kernel_size, 
+                        stride=layer.stride, 
+                        padding=layer.padding,
+                        bias=layer.bias)
+        # replace layer 1                
+        self.encoder.conv1 = new_layer        
+        # modify FC layer
+        self.fc_in = self.encoder.fc.in_features # get input feature in FC
+        # replace output class num
+        self.encoder.fc = nn.Sequential(
+                nn.Linear(self.fc_in, num_classes)
+                )
+
+    def forward(self, x):
+        return self.encoder(x)
 
 
 
